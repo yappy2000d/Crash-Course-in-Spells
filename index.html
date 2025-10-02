@@ -1,193 +1,218 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>Lights "On" 3x3</title>
-<style>
-body {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  font-family: 'Segoe UI', sans-serif;
-  background: #f0f4f8;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
+  <meta charset="UTF-8">
+  <title>Lights Out 3x3 - RWD 完整版</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
 
-.container {
-  display: flex;
-  flex-direction: column; /* 預設上下排列 */
-  align-items: center;
-  gap: 30px;
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
+    .container {
+      display: flex;
+      flex-direction: column;
+      /* 預設上下排列 */
+      align-items: center;
+      gap: 30px;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
 
-/* 大螢幕左右排列 */
-@media(min-width: 992px){
-  .container {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  .input-container, .solution-container {
-    width: auto;
-  }
-}
+    .board-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+    }
 
-.board-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  width: 100%;
-}
+    h3 {
+      margin: 0;
+      font-weight: 600;
+      color: #333;
+      text-align: center;
+    }
 
-h3 { margin: 0; font-weight: 600; color: #333; text-align: center; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 8px;
+      width: 36vw;
+    }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  grid-gap: 8px;
-  width: min(90vw, 200px); /* 小螢幕盤面大，桌面最大 400px */
-}
+    .cell {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background 0.2s;
+    }
 
-.cell {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.1s, background 0.2s;
-}
+    .cell.active {
+      background-color: #fffd4d;
+    }
 
-.cell.active { background-color: #fffd4d; }
-.cell.inactive { background-color: #ff4d4f; }
-.cell:hover { transform: scale(1.05); }
+    .cell.inactive {
+      background-color: #ff4d4f;
+    }
 
-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background-color: #1890ff;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
+    .cell:hover {
+      transform: scale(1.05);
+    }
 
-button:hover { background-color: #40a9ff; transform: translateY(-2px);}
-</style>
+    button {
+      margin-top: 10px;
+      padding: 1.2em 2em;
+      border: none;
+      border-radius: 8px;
+      background-color: #1890ff;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background-color: #40a9ff;
+      transform: translateY(-2px);
+    }
+
+
+    /* 大螢幕 */
+    @media(min-width: 992px) {
+      .container {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: flex-start;
+      }
+
+      .input-container,
+      .solution-container {
+        width: auto;
+      }
+
+      .board {
+        width: 15vw;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-  <!-- 輸入盤面 -->
-  <div class="board-container input-container">
-    <h3>當前盤面</h3>
-    <div class="board" id="currentBoard"></div>
-    <h3>目標盤面</h3>
-    <div class="board" id="targetBoard"></div>
-    <button id="solveBtn">計算解答</button>
+  <div class="container">
+    <!-- 輸入盤面 -->
+    <div class="board-container input-container">
+      <h3>當前盤面</h3>
+      <div class="board" id="currentBoard"></div>
+      <h3>目標盤面</h3>
+      <div class="board" id="targetBoard"></div>
+      <button id="solveBtn">計算解答</button>
+    </div>
+
+    <!-- 解答盤面 -->
+    <div class="board-container solution-container">
+      <h3>解答盤面</h3>
+      <div class="board" id="solutionBoard"></div>
+    </div>
   </div>
 
-  <!-- 解答盤面 -->
-  <div class="board-container solution-container">
-    <h3>解答盤面</h3>
-    <div class="board" id="solutionBoard"></div>
-  </div>
-</div>
+  <script>
+    // 反矩陣 A_inv (mod2)
+    const A_inv = [
+      [1, 0, 1, 0, 0, 1, 1, 1, 0],
+      [0, 0, 0, 0, 1, 0, 1, 1, 1],
+      [1, 0, 1, 1, 0, 0, 0, 1, 1],
+      [0, 0, 1, 0, 1, 1, 0, 0, 1],
+      [0, 1, 0, 1, 1, 1, 0, 1, 0],
+      [1, 0, 0, 1, 1, 0, 1, 0, 0],
+      [1, 1, 0, 0, 0, 1, 1, 0, 1],
+      [1, 1, 1, 0, 1, 0, 0, 0, 0],
+      [0, 1, 1, 1, 0, 0, 1, 0, 1]
+    ];
 
-<script>
-// 反矩陣 A_inv (mod2)
-const A_inv = [
- [1,0,1,0,0,1,1,1,0],
- [0,0,0,0,1,0,1,1,1],
- [1,0,1,1,0,0,0,1,1],
- [0,0,1,0,1,1,0,0,1],
- [0,1,0,1,1,1,0,1,0],
- [1,0,0,1,1,0,1,0,0],
- [1,1,0,0,0,1,1,0,1],
- [1,1,1,0,1,0,0,0,0],
- [0,1,1,1,0,0,1,0,1]
-];
-
-// 初始化盤面
-function initBoard(id) {
-  const board = [];
-  const div = document.getElementById(id);
-  for (let r=0;r<3;r++) {
-    board.push([]);
-    for (let c=0;c<3;c++) {
-      board[r][c] = 0;
-      const cell = document.createElement("div");
-      cell.className = "cell inactive";
-      cell.dataset.r = r;
-      cell.dataset.c = c;
-      cell.addEventListener("click", ()=>{
-        const row = parseInt(cell.dataset.r);
-        const col = parseInt(cell.dataset.c);
-        board[row][col] ^= 1;
-        cell.className = "cell " + (board[row][col] ? "active":"inactive");
-      });
-      div.appendChild(cell);
+    // 初始化盤面
+    function initBoard(id) {
+      const board = [];
+      const div = document.getElementById(id);
+      for (let r = 0; r < 3; r++) {
+        board.push([]);
+        for (let c = 0; c < 3; c++) {
+          board[r][c] = 0;
+          const cell = document.createElement("div");
+          cell.className = "cell inactive";
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+          cell.addEventListener("click", () => {
+            const row = parseInt(cell.dataset.r);
+            const col = parseInt(cell.dataset.c);
+            board[row][col] ^= 1;
+            cell.className = "cell " + (board[row][col] ? "active" : "inactive");
+          });
+          div.appendChild(cell);
+        }
+      }
+      return board;
     }
-  }
-  return board;
-}
 
-const current = initBoard("currentBoard");
-const target = initBoard("targetBoard");
+    const current = initBoard("currentBoard");
+    const target = initBoard("targetBoard");
 
-// GF(2) 矩陣向量乘法
-function matVecMod2(mat, vec) {
-  const n = vec.length;
-  const res = new Array(n).fill(0);
-  for (let i=0;i<n;i++) {
-    let sum = 0;
-    for (let j=0;j<n;j++) sum ^= (mat[i][j] & vec[j]);
-    res[i] = sum;
-  }
-  return res;
-}
+    // GF(2) 矩陣向量乘法
+    function matVecMod2(mat, vec) {
+      const n = vec.length;
+      const res = new Array(n).fill(0);
+      for (let i = 0; i < n; i++) {
+        let sum = 0;
+        for (let j = 0; j < n; j++) sum ^= (mat[i][j] & vec[j]);
+        res[i] = sum;
+      }
+      return res;
+    }
 
-// 計算解答
-function solveLightsOut(current, target) {
-  const n = current.length;
-  const b = [];
-  for (let r=0;r<n;r++)
-    for (let c=0;c<n;c++)
-      b.push((target[r][c]^current[r][c])&1);
-  const x = matVecMod2(A_inv,b);
-  const solution = [];
-  for (let r=0;r<n;r++) solution.push(x.slice(r*3,r*3+3));
-  return solution;
-}
+    // 計算解答
+    function solveLightsOut(current, target) {
+      const n = current.length;
+      const b = [];
+      for (let r = 0; r < n; r++)
+        for (let c = 0; c < n; c++)
+          b.push((target[r][c] ^ current[r][c]) & 1);
+      const x = matVecMod2(A_inv, b);
+      const solution = [];
+      for (let r = 0; r < n; r++) solution.push(x.slice(r * 3, r * 3 + 3));
+      return solution;
+    }
 
-// 顯示解答盤面
-function displaySolution(solution) {
-  const solDiv = document.getElementById("solutionBoard");
-  solDiv.innerHTML = "";
-  solution.flat().forEach(val=>{
-    const cell = document.createElement("div");
-    cell.className = "cell " + (val?"active":"inactive");
-    solDiv.appendChild(cell);
-  });
-}
+    // 顯示解答盤面
+    function displaySolution(solution) {
+      const solDiv = document.getElementById("solutionBoard");
+      solDiv.innerHTML = "";
+      solution.flat().forEach(val => {
+        const cell = document.createElement("div");
+        cell.className = "cell " + (val ? "active" : "inactive");
+        solDiv.appendChild(cell);
+      });
+    }
 
-document.getElementById("solveBtn").addEventListener("click", ()=>{
-  const sol = solveLightsOut(current,target);
-  displaySolution(sol);
-});
-</script>
+    document.getElementById("solveBtn").addEventListener("click", () => {
+      const sol = solveLightsOut(current, target);
+      displaySolution(sol);
+    });
+  </script>
 </body>
+
 </html>
